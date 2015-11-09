@@ -1,9 +1,10 @@
 import Swift
 
 protocol Observable {
-	typealias Observer : Hashable
 	typealias Invocation = (Self) -> ()
-	var observers : [Observer : Invocation] { get set }
+	
+	mutating func registerObserver(observer: AnyObject, callback : (Self) -> ())
+	mutating func removeObserver(observer: AnyObject)
 
 	func postNofitication()
 }
@@ -18,32 +19,46 @@ struct Employee : Observable {
 		}
 	}
 
-	var observers : [Manager : Invocation]
+	private var observers : [(AnyObject, (Employee) -> ())] = []
 	
+	mutating func registerObserver(observer: AnyObject, callback: Invocation) {
+		removeObserver(observer)
+		observers.append((observer, callback))
+	}
+	
+	mutating func removeObserver(observer: AnyObject) {
+		self.observers = self.observers.filter { (registeredObserver, _) in
+			return registeredObserver === observer
+		}
+	}
+
 	func postNofitication() {
 		for (_, invocation) in observers {
 			invocation(self)
 		}
 	}
+	
+	init(name: String, currentActivity: String) {
+		self.name = name
+		self.currentActivity = currentActivity
+	}
 }
 
-final class Manager : Hashable {
-	func callback(e: Employee) {
-		print("\(e.name) is \(e.currentActivity)")
+final class Manager {
+	let name : String
+	
+	func checkInOnEmployee(e: Employee) {
+		print("\(self.name) is checking in on \(e.name), who's \(e.currentActivity).")
 	}
 	
-	var hashValue : Int {
-		let pointer = unsafeAddressOf(self)
-		return pointer.hashValue
+	init(name: String) {
+		self.name = name
 	}
 }
 
-func ==(lhs: Manager, rhs: Manager) -> Bool {
-	return lhs.hashValue == rhs.hashValue
-}
+var alice = Manager(name: "Alice")
+var bob = Employee(name: "Bob", currentActivity: "working on Core Metrics")
 
-var alice = Manager()
-let obs = [alice : alice.callback]
-var bob = Employee(name: "Bob", currentActivity: "working on Core Metrics", observers: obs)
+bob.registerObserver(alice, callback: alice.checkInOnEmployee)
 
 bob.currentActivity = "watching YouTube"
