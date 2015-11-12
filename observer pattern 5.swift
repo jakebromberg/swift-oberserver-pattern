@@ -59,10 +59,6 @@ protocol Employee : ObservableType {
     var currentActivity : String { get set }
 }
 
-extension Employee {
-    
-}
-
 class FTE : ObservableType {
     let name : String
     var registrar : [ObserverRegistration<FTE>]
