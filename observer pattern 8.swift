@@ -11,9 +11,9 @@ protocol ObservableBackingStore {
 }
 
 extension ObservableBackingStore {
-	func postNotifications(_ : Self) {
+	func postNotifications(s : Self) {
 		for (_, callback) in self.registrar {
-			callback(self)
+			callback(s)
 		}
 	}
 }
