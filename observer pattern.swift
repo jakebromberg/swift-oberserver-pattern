@@ -9,12 +9,12 @@ protocol ObservablePrototypePublic {
 	func postNotifications(_ : Self)
 }
 
-protocol ObservablePrototypePrivate {
+protocol ObservablePrototypeInternal {
 	typealias RegistrationType : Hashable
 	var registrar : [RegistrationType : Self -> ()] { get set }
 }
 
-extension ObservablePrototypePublic where Self : ObservablePrototypePrivate {
+extension ObservablePrototypePublic where Self : ObservablePrototypeInternal {
 	mutating func registerObserver(observer: RegistrationType, callback: Self -> ()) {
 		registrar[observer] = callback
 	}
@@ -30,30 +30,30 @@ extension ObservablePrototypePublic where Self : ObservablePrototypePrivate {
 	}
 }
 
-typealias ObservableType = protocol<ObservablePrototypePublic, ObservablePrototypePrivate>
+typealias ObservableType = protocol<ObservablePrototypePublic, ObservablePrototypeInternal>
 
 protocol Employee {
 	var name : String { get }
 	
-	var currentActivity : String { get set }
+	var activity : String { get set }
 }
 
 struct Developer : Employee, ObservableType {
 	let name : String
-	var registrar : [ObjectIdentifier : Developer -> ()]
-	
-	var currentActivity : String {
+	var activity : String {
 		didSet {
 			postNotifications(self)
 		}
 	}
+	
+	internal var registrar : [ObjectIdentifier : Developer -> ()] = [:]
 }
 
 final class Manager {
 	let name : String
 	
-	func checkInOnEmployee<E : Employee>(e: E) {
-		print("\(self.name) is checking in on \(e.name), who's \(e.currentActivity).")
+	func micromanage(e: Employee) {
+		print("\(self.name) is checking in on \(e.name), who's \(e.activity).")
 	}
 	
 	init(name: String) {
@@ -63,10 +63,10 @@ final class Manager {
 
 let alice = Manager(name: "Alice")
 
-var bob = Developer(name: "Bob", registrar: [:], currentActivity: "checking email")
-bob.registerObserver(ObjectIdentifier(alice), callback: alice.checkInOnEmployee)
+var bob = Developer(name: "Bob", activity: "checking email", registrar: [:])
+bob.registerObserver(ObjectIdentifier(alice), callback: alice.micromanage)
 
-bob.currentActivity = "working on Core Metrics"
-bob.currentActivity = "watching YouTube"
-bob.currentActivity = "eating lunch"
-bob.currentActivity = "Nerfing around"
+bob.activity = "working on Core Metrics"
+bob.activity = "watching YouTube"
+bob.activity = "eating lunch"
+bob.activity = "Nerfing around"
