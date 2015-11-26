@@ -1,6 +1,6 @@
 import Swift
 
-protocol ObservableTypePublic {
+protocol ObservablePrototypePublic {
 	typealias ObserverType
 	
 	mutating func registerObserver(observer: ObserverType, callback: Self -> ())
@@ -9,12 +9,12 @@ protocol ObservableTypePublic {
 	func postNotifications(_ : Self)
 }
 
-protocol ObservableTypePrivate {
+protocol ObservablePrototypePrivate {
 	typealias RegistrationType : Hashable
 	var registrar : [RegistrationType : Self -> ()] { get set }
 }
 
-extension ObservableTypePublic where Self : ObservableTypePrivate {
+extension ObservablePrototypePublic where Self : ObservablePrototypePrivate {
 	mutating func registerObserver(observer: RegistrationType, callback: Self -> ()) {
 		registrar[observer] = callback
 	}
@@ -30,7 +30,7 @@ extension ObservableTypePublic where Self : ObservableTypePrivate {
 	}
 }
 
-typealias ObservableType = protocol<ObservableTypePublic, ObservableTypePrivate>
+typealias ObservableType = protocol<ObservablePrototypePublic, ObservablePrototypePrivate>
 
 protocol Employee {
 	var name : String { get }
