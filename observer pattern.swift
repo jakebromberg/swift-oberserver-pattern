@@ -31,13 +31,14 @@ extension MessageBusType {
 
 // The ObserableType is a special case of MessageBusType, where MessageType == Self
 protocol ObservableType : MessageBusType {
-    mutating func registerObserver(observer: RegistrationType, callback: Self -> ())
-    mutating func removeObserver(observer: RegistrationType)
-
-    func postNotifications(_ : Self)
-
-    var registrar : [RegistrationType : Self -> ()] { get set }
+    typealias MessageType = Self
 }
+
+struct Thing : ObservableType {
+    var registrar : [ObjectIdentifier : Thing -> ()]
+}
+
+// Now we'll attempt to construct a MessageBusType that signals something other than itself
 
 protocol Employee {
     var name : String { get }
@@ -78,6 +79,7 @@ bob.activity = "watching YouTube"
 bob.activity = "eating lunch"
 bob.activity = "Nerfing around"
 
+// Using an enum, we can recover a delegation pattern over a message bus, wherein each case would map to a separate method in the delegate.
 struct ViewModel : MessageBusType {
     enum ViewModelState {
         case Valid(String)
