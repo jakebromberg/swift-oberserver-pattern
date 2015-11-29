@@ -28,14 +28,15 @@ extension MessageBusType {
     }
 }
 
-//protocol ObservableType : MessageBusType {
-//    mutating func registerObserver(observer: RegistrationType, callback: Self -> ())
-//    mutating func removeObserver(observer: RegistrationType)
-//
-//    func postNotifications(_ : Self)
-//
-//    var registrar : [RegistrationType : Self -> ()] { get set }
-//}
+// The ObserableType is a special case of MessageBusType, where MessageType == Self
+protocol ObservableType : MessageBusType {
+    mutating func registerObserver(observer: RegistrationType, callback: Self -> ())
+    mutating func removeObserver(observer: RegistrationType)
+
+    func postNotifications(_ : Self)
+
+    var registrar : [RegistrationType : Self -> ()] { get set }
+}
 
 protocol Employee {
     var name : String { get }
