@@ -1,4 +1,5 @@
 import Swift
+import UIKit
 
 protocol MessageBusType {
     typealias RegistrationType : Hashable
@@ -76,3 +77,43 @@ bob.activity = "working on Core Metrics"
 bob.activity = "watching YouTube"
 bob.activity = "eating lunch"
 bob.activity = "Nerfing around"
+
+struct ViewModel : MessageBusType {
+    enum ViewModelState {
+        case Valid(String)
+        case Invalid(String)
+        case Cancelled
+    }
+    
+    var state : ViewModelState {
+        didSet {
+            postNotifications((self, state))
+        }
+    }
+    
+    var registrar : [ObjectIdentifier : (ViewModel, ViewModelState) -> ()]
+}
+
+final class Button {
+    var backgroundColor : UIColor
+    
+    func widgetChangedState(w: ViewModel, s: ViewModel.ViewModelState) {
+        func newBackgroundColor() -> UIColor {
+            switch (s) {
+            case .Valid(_): return UIColor.greenColor()
+            case .Invalid(_): return UIColor.redColor()
+            case .Cancelled: return UIColor.yellowColor()
+            }
+        }
+        
+        backgroundColor = newBackgroundColor()
+    }
+    
+    init(backgroundColor: UIColor) {
+        self.backgroundColor = backgroundColor
+    }
+}
+
+var viewModel  = ViewModel(state: .Valid("👍"), registrar: [:])
+var button = Button(backgroundColor: UIColor.greenColor())
+viewModel.registerObserver(ObjectIdentifier(button), callback: button.widgetChangedState)
