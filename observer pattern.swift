@@ -1,7 +1,7 @@
 import Swift
 import UIKit
 
-protocol MessageBusType {
+protocol EventType {
     typealias RegistrationType : Hashable
     typealias MessageType
     
@@ -13,7 +13,7 @@ protocol MessageBusType {
     var registrar : [RegistrationType : MessageType -> ()] { get set }
 }
 
-extension MessageBusType {
+extension EventType {
     mutating func registerObserver(observer: RegistrationType, callback: MessageType -> ()) {
         registrar[observer] = callback
     }
@@ -29,8 +29,8 @@ extension MessageBusType {
     }
 }
 
-// We discover that the ObserableType is really just a special case of MessageBusType, where MessageType == Self
-protocol ObservableType : MessageBusType {
+// We discover that the ObserableType is really a special case of the EventType, where MessageType == Self
+protocol ObservableType : EventType {
     typealias MessageType = Self
 }
 
@@ -40,7 +40,7 @@ struct Thing : ObservableType {
     var registrar : [ObjectIdentifier : Thing -> ()]
 }
 
-// Now we'll construct a MessageBusType that signals something other than itself
+// Now we'll construct a EventType that signals something other than itself
 
 protocol Employee {
     var name : String { get }
@@ -48,7 +48,7 @@ protocol Employee {
     var activity : String { get set }
 }
 
-struct Developer : Employee, MessageBusType {
+struct Developer : Employee, EventType {
     var registrar : [ObjectIdentifier : (String, String) -> ()] = [:]
 
     let name : String
@@ -97,13 +97,13 @@ bob.activity = "Nerfing around"
 //
 // The message pattern seems at odds with how we conventionally delegate. We need multiple actions on our targets. Swifts rigid type system again appears to interfere with the dynamic types we took for granted in Objective-C.
 //
-// But actually this is not a problem. We can formulate the delegate pattern as just another special case of the message bus, wherein we pass ourselves for context, plus some parameters.
-protocol DelegateType : MessageBusType {
+// But actually this is not a problem. We can formulate the delegate pattern as another special case of the message bus, wherein we pass ourselves for context, plus some parameters.
+protocol DelegateType : EventType {
     typealias Parameters
     typealias MessageType = (Self, Parameters)
 }
 
-// These we expose these Parameters as enumerations with associated values.
+// We expose these Parameters as enumerations with associated values.
 
 struct ViewModel : DelegateType {
     typealias Parameters = State
